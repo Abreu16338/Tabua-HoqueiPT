@@ -9,6 +9,7 @@ let greenPlayerCount = 0;
 const players = [];
 let selectedPlayer = null;
 let offsetX, offsetY;
+let editMode = false; // Controle de modo de edição
 
 // Função para desenhar o campo
 function drawField() {
@@ -18,6 +19,10 @@ function drawField() {
     // Definindo o tamanho do canvas
     canvas.width = canvas.offsetWidth;
     canvas.height = canvas.offsetHeight;
+
+    // Configurando o fundo do canvas
+    ctx.fillStyle = 'white'; // Define a cor de fundo como branco
+    ctx.fillRect(0, 0, canvas.width, canvas.height); // Preenche o canvas com a cor de fundo
 
     // Configurando estilos de desenho
     ctx.strokeStyle = 'black';
@@ -159,7 +164,46 @@ function redrawPlayers() {
     });
 }
 
-// Adiciona eventos de arrastar
+// Função para ativar/desativar o modo de edição
+function toggleEditMode() {
+    editMode = !editMode;
+    const button = document.getElementById('editModeButton');
+
+    // Atualiza o texto do botão com base no estado do modo de edição
+    if (editMode) {
+        button.innerHTML = '<i class="fa-solid fa-pen-to-square"></i>  <i class="fa-solid fa-check"></i>';
+        button.classList.add('active');
+        button.classList.remove('inactive');
+    } else {
+        button.innerHTML = '<i class="fa-solid fa-pen-to-square"></i>  <i class="fa-solid fa-xmark"></i> ';
+        button.classList.add('inactive');
+        button.classList.remove('active');
+    }
+}
+
+// Função para remover um jogador
+function removePlayer(x, y) {
+    if (editMode) { // Remove o jogador somente se o modo de edição estiver ativado
+        const radius = 15;
+        for (let i = players.length - 1; i >= 0; i--) {
+            const player = players[i];
+            const dx = x - player.x;
+            const dy = y - player.y;
+            if (Math.sqrt(dx * dx + dy * dy) < radius) {
+                players.splice(i, 1); // Remove o jogador do array
+                if (player.color === 'red') {
+                    redPlayerCount--;
+                } else if (player.color === 'green') {
+                    greenPlayerCount--;
+                }
+                redrawPlayers(); // Redesenha os jogadores
+                break;
+            }
+        }
+    }
+}
+
+// Adiciona eventos de arrastar e clicar para remover jogadores
 const canvas = document.getElementById('campoHockey');
 
 canvas.addEventListener('mousedown', function(e) {
@@ -167,15 +211,20 @@ canvas.addEventListener('mousedown', function(e) {
     const x = e.clientX - rect.left;
     const y = e.clientY - rect.top;
 
-    players.forEach(player => {
-        const dx = x - player.x;
-        const dy = y - player.y;
-        if (Math.sqrt(dx * dx + dy * dy) < player.radius) {
-            selectedPlayer = player;
-            offsetX = x - player.x;
-            offsetY = y - player.y;
-        }
-    });
+    if (editMode) {
+        // Remove o jogador se clicado diretamente e o modo de edição estiver ativado
+        removePlayer(x, y);
+    } else {
+        players.forEach(player => {
+            const dx = x - player.x;
+            const dy = y - player.y;
+            if (Math.sqrt(dx * dx + dy * dy) < player.radius) {
+                selectedPlayer = player;
+                offsetX = x - player.x;
+                offsetY = y - player.y;
+            }
+        });
+    }
 });
 
 canvas.addEventListener('mousemove', function(e) {
@@ -194,3 +243,20 @@ canvas.addEventListener('mousemove', function(e) {
 canvas.addEventListener('mouseup', function() {
     selectedPlayer = null;
 });
+
+function photo_canvas() {
+    const canvas = document.getElementById('campoHockey');
+    const dataURL = canvas.toDataURL('image/png'); // Converte o canvas para uma URL de dados PNG
+
+    // Cria um link temporário para o download
+    const link = document.createElement('a');
+    link.href = dataURL;
+    link.download = 'campo_hockey.png'; // Nome do arquivo para o download
+
+    // Adiciona o link ao DOM e dispara o clique para iniciar o download
+    document.body.appendChild(link);
+    link.click();
+
+    // Remove o link do DOM
+    document.body.removeChild(link);
+}

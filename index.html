@@ -12,20 +12,21 @@
 <body>
     <div class="main">
         <div class="players">
+            <span class="apagar" onclick="location.reload()"><i class="fa-solid fa-eraser"></i></span>
+            <span class="photo" onclick="photo_canvas()"><i class="fa-solid fa-image"></i></span>
             <div class="equipa1">
                 <span onclick="add_red()"><i class="fa-solid fa-user-plus"></i></span>
             </div>
             <div class="equipa2">
                 <span onclick="add_green()"><i class="fa-solid fa-user-plus"></i></span>
             </div>
-
         </div>
         <div class="tabua">
             <div class="campo">
                 <canvas id="campoHockey"></canvas>                
             </div>
             <div class="botoes">
-                
+                <button id="editModeButton" onclick="toggleEditMode()"><i class="fa-solid fa-pen-to-square"></i></button>
             </div>
         </div>
     </div>
